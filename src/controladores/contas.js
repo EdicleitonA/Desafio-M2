@@ -36,10 +36,10 @@ function criarContas(req, res) {
 
     for (let conta of bancodedados.contas) {
         if (conta.usuario.cpf === cpf) {
-            return res.status(400).json({ mensagem: "CPF já está cadastrado em outra conta." })
+            return res.status(400).json({ mensagem: 'CPF já está cadastrado em outra conta.' })
         }
         if (conta.usuario.email === email) {
-            return res.status(400).json({ mensagem: "Email já está cadastrado em outra conta." })
+            return res.status(400).json({ mensagem: 'Email já está cadastrado em outra conta.' })
         }
     }
 
@@ -64,9 +64,49 @@ function criarContas(req, res) {
     bancodedados.contas.push(novaConta);
     return res.status(201).json(novaConta);
 
+
+}
+
+function atualizarDados(req, res) {
+    const { nome, cpf, data_nascimento, telefone, email, senha } = req.body;
+    const { numero } = req.params;
+
+    if (!nome && !cpf && !data_nascimento && !telefone && !email && !senha) {
+        return res.status(400).json({ mensagem: 'É necessário informar um ou mais campos do usuário para atualizar.' });
+    }
+
+    const cpfExistente = bancodedados.contas.some(function (contaExistente) {
+        return contaExistente.numero !== numero && contaExistente.usuario.cpf === cpf;
+    })
+    if (cpf && cpfExistente) {
+        return res.status(400).json({ mensagem: 'CPF já está cadastrado em outra conta.' })
+    }
+
+    const emailExistente = bancodedados.contas.some(function (contaExistente) {
+        return contaExistente.numero !== numero && contaExistente.usuario.email === email;
+    })
+    if (email && emailExistente) {
+        return res.status(400).json({ mensagem: 'Email já está cadastrado em outra conta.' })
+    }
+
+    const atualizarConta = bancodedados.contas.find(function (conta) {
+        return conta.numero === numero;
+    })
+    if (!atualizarConta) {
+        return res.status(404).json({ mensagem: 'A conta não foi encontrada.' })
+    }
+    atualizarConta.usuario.nome = nome;
+    atualizarConta.usuario.cpf = cpf;
+    atualizarConta.usuario.data_nascimento = data_nascimento;
+    atualizarConta.usuario.email = email;
+    atualizarConta.usuario.telefone = telefone;
+    atualizarConta.usuario.senha = senha;
+
+    return res.status(200).json({ mensagem: 'Os dados da conta foram atualizados com sucesso!' })
 }
 
 module.exports = {
     listaDeContas,
-    criarContas
+    criarContas,
+    atualizarDados
 };
