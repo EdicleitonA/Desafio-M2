@@ -1,4 +1,4 @@
-const bancodedados = require("../bancodedados");
+let bancodedados = require("../bancodedados");
 
 
 function listaDeContas(req, res) {
@@ -105,8 +105,23 @@ function atualizarDados(req, res) {
     return res.status(200).json({ mensagem: 'Os dados da conta foram atualizados com sucesso!' })
 }
 
+function deletarConta(req, res) {
+    const { numero } = req.params;
+    const excluirConta = bancodedados.contas.findIndex(function (conta) {
+        return conta.numero === numero;
+    })
+    if (excluirConta === -1) {
+        return res.status(404).json({ mensagem: 'A conta não foi encontrada' });
+    }
+    bancodedados.contas.splice(excluirConta, 1)
+    return res.status(200).json({ mensagem: 'A conta foi excluida com sucesso!' })
+
+}
+
+
 module.exports = {
     listaDeContas,
     criarContas,
-    atualizarDados
+    atualizarDados,
+    deletarConta
 };
