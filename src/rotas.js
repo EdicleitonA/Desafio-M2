@@ -9,7 +9,8 @@ rotas.post("/contas", contas.criarContas);
 rotas.put("/contas/:numero/usuario", contas.atualizarDados);
 rotas.delete("/contas/:numero", contas.deletarConta);
 rotas.post("/transacoes/depositar", transacoes.depositar);
-rotas.post("/transacoes/sacar", transacoes.sacar)
+rotas.post("/transacoes/sacar", transacoes.sacar);
+rotas.post("/transacoes/transferir", transacoes.transferir);
 
 
 module.exports = rotas;
