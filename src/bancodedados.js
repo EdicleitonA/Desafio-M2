@@ -7,14 +7,14 @@ module.exports = {
     },
     contas: [{
         numero: "1",
-        saldo: 0,
+        saldo: 500,
         usuario: {
             nome: 'Foo Bar',
             cpf: '00011122233',
             data_nascimento: '2021-03-15',
             telefone: '71999998888',
             email: 'foo@bar.com',
-            senha: '1234'
+            senha: "8888"
         }
     },
     {
@@ -26,7 +26,7 @@ module.exports = {
             data_nascimento: '2021-03-15',
             telefone: '71999998888',
             email: 'foo@bar2.com',
-            senha: '12345'
+            senha: "12345"
         }
     }],
     saques: [],

@@ -115,7 +115,6 @@ function deletarConta(req, res) {
     }
     bancodedados.contas.splice(excluirConta, 1)
     return res.status(200).json({ mensagem: 'A conta foi excluida com sucesso!' })
-
 }
 
 
