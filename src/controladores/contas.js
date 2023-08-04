@@ -1,7 +1,7 @@
 let bancodedados = require("../bancodedados");
 
 
-function listaDeContas(req, res) {
+function validarSenha(req, res, next) {
     const { senha_banco } = req.query;
     if (!senha_banco) {
         return res.status(400).json({ mensagem: 'A senha do banco é obrigatória.' });
@@ -9,6 +9,10 @@ function listaDeContas(req, res) {
     if (senha_banco !== bancodedados.banco.senha) {
         return res.status(401).json({ mensagem: 'Senha do banco inválida.' });
     }
+    next();
+
+}
+function listaDeContas(req, res) {
     return res.status(200).json(bancodedados.contas);
 };
 
@@ -16,30 +20,30 @@ function criarContas(req, res) {
     const { nome, cpf, data_nascimento, telefone, email, senha } = req.body;
 
     if (!nome) {
-        return res.status(400).json({ mensagem: 'O nome é Obrigatório.' })
+        return res.status(400).json({ mensagem: 'O nome é Obrigatório.' });
     };
     if (!cpf) {
-        return res.status(400).json({ mensagem: 'O cpf é Obrigatório.' })
+        return res.status(400).json({ mensagem: 'O cpf é Obrigatório.' });
     };
     if (!data_nascimento) {
-        return res.status(400).json({ mensagem: 'A data de nascimento é Obrigatório.' })
+        return res.status(400).json({ mensagem: 'A data de nascimento é Obrigatório.' });
     };
     if (!telefone) {
-        return res.status(400).json({ mensagem: 'O telefone é Obrigatório.' })
+        return res.status(400).json({ mensagem: 'O telefone é Obrigatório.' });
     };
     if (!email) {
-        return res.status(400).json({ mensagem: 'O email é Obrigatório.' })
+        return res.status(400).json({ mensagem: 'O email é Obrigatório.' });
     };
     if (!senha) {
-        return res.status(400).json({ mensagem: 'A senha é Obrigatório.' })
+        return res.status(400).json({ mensagem: 'A senha é Obrigatório.' });
     };
 
     for (let conta of bancodedados.contas) {
         if (conta.usuario.cpf === cpf) {
-            return res.status(400).json({ mensagem: 'CPF já está cadastrado em outra conta.' })
+            return res.status(400).json({ mensagem: 'CPF já está cadastrado em outra conta.' });
         }
         if (conta.usuario.email === email) {
-            return res.status(400).json({ mensagem: 'Email já está cadastrado em outra conta.' })
+            return res.status(400).json({ mensagem: 'Email já está cadastrado em outra conta.' });
         }
     }
 
@@ -79,21 +83,21 @@ function atualizarDados(req, res) {
         return contaExistente.numero !== numero && contaExistente.usuario.cpf === cpf;
     })
     if (cpf && cpfExistente) {
-        return res.status(400).json({ mensagem: 'CPF já está cadastrado em outra conta.' })
+        return res.status(400).json({ mensagem: 'CPF já está cadastrado em outra conta.' });
     }
 
     const emailExistente = bancodedados.contas.some(function (contaExistente) {
         return contaExistente.numero !== numero && contaExistente.usuario.email === email;
     })
     if (email && emailExistente) {
-        return res.status(400).json({ mensagem: 'Email já está cadastrado em outra conta.' })
+        return res.status(400).json({ mensagem: 'Email já está cadastrado em outra conta.' });
     }
 
     const atualizarConta = bancodedados.contas.find(function (conta) {
         return conta.numero === numero;
     })
     if (!atualizarConta) {
-        return res.status(404).json({ mensagem: 'A conta não foi encontrada.' })
+        return res.status(404).json({ mensagem: 'A conta não foi encontrada.' });
     }
     atualizarConta.usuario.nome = nome;
     atualizarConta.usuario.cpf = cpf;
@@ -102,7 +106,7 @@ function atualizarDados(req, res) {
     atualizarConta.usuario.telefone = telefone;
     atualizarConta.usuario.senha = senha;
 
-    return res.status(200).json({ mensagem: 'Os dados da conta foram atualizados com sucesso!' })
+    return res.status(200).json({ mensagem: 'Os dados da conta foram atualizados com sucesso!' });
 }
 
 function deletarConta(req, res) {
@@ -111,16 +115,91 @@ function deletarConta(req, res) {
         return conta.numero === numero;
     })
     if (excluirConta === -1) {
-        return res.status(404).json({ mensagem: 'A conta não foi encontrada' });
+        return res.status(404).json({ mensagem: 'A conta não foi encontrada.' });
     }
     bancodedados.contas.splice(excluirConta, 1)
-    return res.status(200).json({ mensagem: 'A conta foi excluida com sucesso!' })
-}
+    return res.status(200).json({ mensagem: 'A conta foi excluida com sucesso!' });
+};
 
+function saldo(req, res) {
+    const { numero_conta, senha } = req.query
+
+    if (!numero_conta) {
+        return res.status(400).json({ mensagem: 'O número da conta é obrigatório.' });
+    }
+    if (!senha) {
+        return res.status(400).json({ mensagem: 'A senha da conta é obrigatória.' });
+    }
+    const conta = bancodedados.contas.find(function (conta) {
+        return conta.numero === numero_conta;
+    });
+    if (!conta) {
+        return res.status(404).json({ mensagem: 'A conta não foi encontrada.' });
+    }
+    if (senha !== conta.usuario.senha) {
+        return res.status(400).json({ mensagem: 'A senha está incorreta.' });
+    }
+
+    return res.status(200).json({ mensagem: `Seu saldo é ${conta.saldo}` });
+
+};
+
+
+function extrato(req, res) {
+    const { numero_conta, senha } = req.query;
+
+    if (!numero_conta) {
+        return res.status(400).json({ mensagem: 'O número da conta é obrigatório.' });
+    }
+    if (!senha) {
+        return res.status(400).json({ mensagem: 'A senha da conta é obrigatória.' });
+    }
+    const conta = bancodedados.contas.find(function (conta) {
+        return conta.numero === numero_conta;
+    });
+    if (!conta) {
+        return res.status(404).json({ mensagem: 'A conta não foi encontrada.' });
+    }
+    if (senha !== conta.usuario.senha) {
+        return res.status(400).json({ mensagem: 'A senha está incorreta.' });
+    };
+
+    const extrato = {
+        depositos: [],
+        saques: [],
+        transferenciasEnviadas: [],
+        transferenciasRecebidas: []
+    };
+
+    const todasAstransacoes = bancodedados.saques.concat(bancodedados.depositos, bancodedados.transferencias)
+
+
+    todasAstransacoes.forEach(function (transacao) {
+        if (transacao.numero_conta === numero_conta) {
+            transacao.valor > 0 ? extrato.depositos.push(transacao) : extrato.saques.push(transacao);
+        }
+        if (transacao.valor < 0) {
+            extrato.saques.push(transacao);
+        }
+
+        if (transacao.numero_conta_origem === numero_conta) {
+            extrato.transferenciasEnviadas.push(transacao);
+        }
+
+        if (transacao.numero_conta_destino === numero_conta) {
+            extrato.transferenciasRecebidas.push(transacao);
+        }
+    })
+
+    return res.status(200).json(extrato);
+};
 
 module.exports = {
+    validarSenha,
     listaDeContas,
     criarContas,
     atualizarDados,
-    deletarConta
+    deletarConta,
+    saldo,
+    extrato
 };

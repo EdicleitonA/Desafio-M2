@@ -124,7 +124,6 @@ function transferir(req, res) {
         numero_conta_origem: numero_conta_origem,
         numero_conta_destino: numero_conta_destino,
         valor: valor,
-        senha: senha
     };
 
     bancodedados.transferencias.push(transacao);
